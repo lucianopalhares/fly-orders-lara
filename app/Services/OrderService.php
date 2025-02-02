@@ -12,8 +12,10 @@ use App\Models\Order;
 use App\Http\Resources\OrderResource;
 use Illuminate\Validation\ValidationException;
 use App\Http\Requests\OrderRequest;
+use Illuminate\Support\Facades\Gate;
 
 class OrderService extends ServiceResponse {
+
     public function __construct(private Order $order) {}
 
     /**
@@ -32,7 +34,9 @@ class OrderService extends ServiceResponse {
                 $limit = 100;
             }
 
-            $orders = Order::query();
+            $user = request()->user();
+
+            $orders = $user->orders();
 
             if (empty($request['user_id']) === false) {
                 $orders->where('user_id', $request['user_id']);
@@ -98,6 +102,8 @@ class OrderService extends ServiceResponse {
                 throw new Exception('Os campos nome, email e senha não estão preenchidos!');
             }
 
+            Gate::authorize('create', Order::class);
+
             DB::beginTransaction();
 
             $data = $this->order->create($data);
@@ -131,6 +137,8 @@ class OrderService extends ServiceResponse {
     {
         try {
             $data = $this->order->findOrFail($id);
+
+            Gate::authorize('view', $data);
 
             $this->setStatus(Response::HTTP_OK);
             $this->setMessage('Pedido encontrado com sucesso!');
