@@ -10,6 +10,7 @@ Route::post('login', [AuthController::class, 'login']);
 
 Route::middleware('auth:api')->group(function () {
     Route::get('profile', [AuthController::class, 'getProfile']);
+    Route::get('notifications', [AuthController::class, 'notifications']);
     Route::post('logout', [AuthController::class, 'logout']);
 
     Route::prefix('orders')->group(function () {
