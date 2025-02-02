@@ -33,6 +33,8 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    protected $dates = ['created_at'];
+
     /**
      * Get the attributes that should be cast.
      *
@@ -44,5 +46,19 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function getCreatedAtAttribute($value)
+    {
+        return \Carbon\Carbon::parse($value)->format('d/m/Y');
+    }
+
+    /**
+     * Retorna os pedidos do usuário solicitante.
+     *
+     * @return object Objeto da classe Order
+     */
+    public function orders(): object {
+        return $this->hasMany(Order::class);
     }
 }
