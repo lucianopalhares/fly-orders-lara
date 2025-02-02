@@ -52,9 +52,9 @@ class OrderController extends Controller
                 'status' => 'required|in:requested,approved,canceled',
             ]);
 
-            $order = $this->service->create($validated);
+            $this->service->create($validated);
 
-            return response()->json($order, 201);
+            return $this->service->getJsonResponse();
         } catch (Exception $e) {
             return response()->json([
                 'error' => 'Falha ao criar o pedido',

@@ -1,12 +1,11 @@
 <?php
 
-namespace App\Infrastructure\Services;
+namespace App\Services;
 
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Response;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\JsonResponse;
-use App\Infrastructure\Services\LogQueueService;
 
 class ServiceResponse
 {

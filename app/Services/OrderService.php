@@ -4,14 +4,15 @@ namespace App\Services;
 
 use Illuminate\Http\Response;
 use Exception;
-
+use App\Services\ServiceResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Models\Order;
 use Illuminate\Support\Facades\Log;
+use App\Http\Resources\OrderResource;
 
-class OrderService {
+class OrderService extends ServiceResponse {
     public function __construct(private Order $order) {}
 
     /**
@@ -70,20 +71,43 @@ class OrderService {
     /**
      * Cadastro do pedido de viagem.
      *
-     * @return array
+     * @return bool
      * @param array $request Campos: user_id, requester_name, destination_name, departure_date, return_date e status.
      */
-    public function create(array $request): array
+    public function create(array $data): bool
     {
         try {
+            if (
+                empty($data['user_id']) === true ||
+                empty($data['requester_name']) === true ||
+                empty($data['destination_name']) === true ||
+                empty($data['departure_date']) === true ||
+                empty($data['return_date']) === true ||
+                empty($data['status']) === true
+            ) {
+                throw new Exception('Os campos nome, email e senha não estão preenchidos!');
+            }
 
-            $order = Order::create($request);
+            DB::beginTransaction();
 
-            return (array) $order;
+            $data = $this->order->create($data);
+
+            $this->setStatus(Response::HTTP_OK);
+            $this->setMessage('Pedido cadastrado com sucesso!');
+            $this->setCollectionItem($data);
+            $this->setResource(OrderResource::class);
+
+            DB::commit();
+
+            return true;
         } catch (Exception $e) {
-            Log::error($e->getMessage());
+            DB::rollback();
 
-            return [];
+            $this->setStatus(Response::HTTP_INTERNAL_SERVER_ERROR);
+            $this->setMessage('Erro ao cadastrar pedido. Tente novamente mais tarde.');
+            $this->setError($e->getMessage());
+
+            return false;
         }
     }
 
