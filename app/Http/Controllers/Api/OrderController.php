@@ -22,16 +22,8 @@ class OrderController extends Controller
      */
     public function getOrders(Request $request): JsonResponse
     {
-        try {
-            $orders = $this->service->getOrders($request->all());
-
-            return response()->json($orders);
-        } catch (Exception $e) {
-            return response()->json([
-                'error' => 'Falha ao recuperar os pedidos',
-                'message' => $e->getMessage()
-            ], 500);
-        }
+        $this->service->getOrders($request->all());
+        return $this->service->getJsonResponse();
     }
 
     /**
@@ -42,25 +34,17 @@ class OrderController extends Controller
      */
     public function create(Request $request): JsonResponse
     {
-        try {
-            $validated = $request->validate([
-                'user_id' => 'required|exists:users,id',
-                'requester_name' => 'required|string',
-                'destination_name' => 'required|string',
-                'departure_date' => 'required|date',
-                'return_date' => 'nullable|date',
-                'status' => 'required|in:requested,approved,canceled',
-            ]);
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'requester_name' => 'required|string',
+            'destination_name' => 'required|string',
+            'departure_date' => 'required|date',
+            'return_date' => 'nullable|date',
+            'status' => 'required|in:requested,approved,canceled',
+        ]);
 
-            $this->service->create($validated);
-
-            return $this->service->getJsonResponse();
-        } catch (Exception $e) {
-            return response()->json([
-                'error' => 'Falha ao criar o pedido',
-                'message' => $e->getMessage()
-            ], 500);
-        }
+        $this->service->create($validated);
+        return $this->service->getJsonResponse();
     }
 
     /**
@@ -71,20 +55,8 @@ class OrderController extends Controller
      */
     public function get(string $id): JsonResponse
     {
-        try {
-            $order = $this->service->get($id);
-            return response()->json($order);
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'error' => 'Pedido não encontrado',
-                'message' => 'Pedido com o ID ' . $id . ' não foi encontrado'
-            ], 404);
-        } catch (Exception $e) {
-            return response()->json([
-                'error' => 'Falha ao recuperar o pedido',
-                'message' => $e->getMessage()
-            ], 500);
-        }
+        $this->service->get($id);
+        return $this->service->getJsonResponse();
     }
 
     /**
@@ -95,24 +67,11 @@ class OrderController extends Controller
      */
     public function updateStatus(string $id, Request $request): JsonResponse
     {
-        try {
-            $validated = $request->validate([
-                'status' => 'required|in:requested,approved,canceled',
-            ]);
+        $validated = $request->validate([
+            'status' => 'required|in:requested,approved,canceled',
+        ]);
 
-            $order = $this->service->get($id, $validated['status']);
-
-            return response()->json($order);
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'error' => 'Pedido não encontrado',
-                'message' => 'Pedido com o ID ' . $id . ' não foi encontrado'
-            ], 404);
-        } catch (Exception $e) {
-            return response()->json([
-                'error' => 'Falha ao atualizar o status do pedido',
-                'message' => $e->getMessage()
-            ], 500);
-        }
+        $this->service->updateStatus($id, $validated['status']);
+        return $this->service->getJsonResponse();
     }
 }

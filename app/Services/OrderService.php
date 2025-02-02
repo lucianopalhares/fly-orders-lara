@@ -18,10 +18,10 @@ class OrderService extends ServiceResponse {
     /**
      * Lista os pedidos com filtro.
      *
-     * @return array
+     * @return bool
      * @param array $request Campos opcionais para filtrar: user_id, requester_name, destination_name, departure_date, return_date e status.
      */
-    public function getOrders(array $request): array
+    public function getOrders(array $request): bool
     {
         try {
             $limit = $request['limit'] ?? 100;
@@ -58,13 +58,22 @@ class OrderService extends ServiceResponse {
                 $orders->where('status', $request['status']);
             }
 
-            $paginatedOrders = (array) $orders->paginate($limit, ['*'], 'page', $page);
+            $dataPaginated = $orders->orderBy('id', 'desc')->paginate($limit, ['*'], 'page', $page);
 
-            return $paginatedOrders;
+            $data = $dataPaginated->map(fn($item) => (object) $item->toArray())->toArray();
+
+            $this->setStatus(Response::HTTP_OK);
+            $this->setMessage('Pedidos listados com sucesso!');
+            $this->setCollection($data);
+            $this->setResource(OrderResource::class);
+
+            return true;
         } catch (Exception $e) {
-            Log::error($e->getMessage());
+            $this->setStatus(Response::HTTP_INTERNAL_SERVER_ERROR);
+            $this->setMessage('Erro ao buscar pedidos. Tente novamente mais tarde.');
+            $this->setError($e->getMessage());
 
-            return [];
+            return false;
         }
     }
 
@@ -114,51 +123,72 @@ class OrderService extends ServiceResponse {
     /**
      * Pegar um pedido pelo ID.
      *
-     * @return array
+     * @return bool
      * @param string $id ID do pedido.
      */
-    public function get(string $id): array
+    public function get(string $id): bool
     {
         try {
-            $order = Order::findOrFail($id);
-            return (array) $order;
+            $data = $this->order->findOrFail($id);
+
+            $this->setStatus(Response::HTTP_OK);
+            $this->setMessage('Pedido encontrado com sucesso!');
+            $this->setCollectionItem($data);
+            $this->setResource(OrderResource::class);
+
+            return true;
+
         } catch (ModelNotFoundException $e) {
-            Log::error($e->getMessage());
-
-            return [];
+            $this->setStatus(Response::HTTP_NOT_FOUND);
+            $this->setMessage('Pedido não encontrada.');
+            $this->setError($e->getMessage());
         } catch (Exception $e) {
-            Log::error($e->getMessage());
-
-            return [];
+            $this->setStatus(Response::HTTP_INTERNAL_SERVER_ERROR);
+            $this->setMessage('Erro ao encontrar pedido. Tente novamente mais tarde.');
+            $this->setError($e->getMessage());
         }
+
+        return false;
     }
 
     /**
      * Editar o status do pedido.
      *
-     * @return array
+     * @return bool
      * @param string $id ID do pedido.
      * @param string $status
      */
-    public function updateStatus(string $id, string $status): array
+    public function updateStatus(string $id, string $status): bool
     {
         try {
-            $order = Order::findOrFail($id);
+            $data = $this->order->findOrFail($id);
 
-            if ($status === 'canceled' && $this->canCancel($order) === false)
-                return [];
+            if ($status === 'canceled' && $this->canCancel($data) === false)
+                return false;
 
-            $order->update(['status' => $status]);
+            DB::beginTransaction();
+            $data->update(['status' => $status]);
 
-            return $order;
+            $this->setStatus(Response::HTTP_OK);
+            $this->setMessage('Pedido atualizado com sucesso!');
+            $this->setCollectionItem($data);
+            $this->setResource(OrderResource::class);
+
+            DB::commit();
+
+            return true;
         } catch (ModelNotFoundException $e) {
-            Log::error($e->getMessage());
-
-            return [];
+            $this->setStatus(Response::HTTP_NOT_FOUND);
+            $this->setMessage('Pedido não encontrado.');
+            $this->setError($e->getMessage());
         } catch (Exception $e) {
-            Log::error($e->getMessage());
+            DB::rollback();
 
-            return [];
+            $this->setStatus(Response::HTTP_INTERNAL_SERVER_ERROR);
+            $this->setMessage('Erro ao atualizar status do pedido. Tente novamente mais tarde.');
+            $this->setError($e->getMessage());
+
+            return false;
         }
     }
 
@@ -175,7 +205,11 @@ class OrderService extends ServiceResponse {
         }
 
         if ($order->status === 'approved' && \Carbon\Carbon::parse($order->departure_date)->isFuture() === false) {
-            Log::error('Não permitido cancelar este pedido. Pois ele já foi aprovado e a data de embarque já passou.');
+            $this->setStatus(Response::HTTP_INTERNAL_SERVER_ERROR);
+
+            $this->setMessage('Não permitido cancelar este pedido.');
+            $this->setError('Este pedido já foi aprovado e a data de embarque já passou.');
+
             return false;
         }
 
