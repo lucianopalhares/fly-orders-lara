@@ -43,16 +43,6 @@ services:
     networks:
       - laravel_network_fly
 
-  mailhog:
-    image: mailhog/mailhog
-    ports:
-      - "8026:8025"
-      - "1025:1025"
-    expose:
-      - 8025
-    networks:
-      - laravel_network_fly
-
 networks:
   laravel_network_fly:
     driver: bridge

@@ -13,6 +13,7 @@ use App\Http\Resources\OrderResource;
 use Illuminate\Validation\ValidationException;
 use App\Http\Requests\OrderRequest;
 use Illuminate\Support\Facades\Gate;
+use App\Notifications\OrderStatusUpdated;
 
 class OrderService extends ServiceResponse {
 
@@ -185,6 +186,8 @@ class OrderService extends ServiceResponse {
 
             DB::commit();
 
+            $data->user->notify(new OrderStatusUpdated($data));
+
             return true;
         } catch (ModelNotFoundException $e) {
             $this->setStatus(Response::HTTP_NOT_FOUND);
@@ -218,6 +221,32 @@ class OrderService extends ServiceResponse {
 
             $this->setMessage('Pedidos aprovados só podem ser cancelados antes da data de embarque.');
             $this->setError('Este pedido não pode ser cancelado porque ele já foi aprovado e a data de embarque já passou.');
+
+            return false;
+        }
+
+        Gate::authorize('updateStatus', $order);
+
+        return true;
+    }
+
+    /**
+     * Valida aprovação de pedido.
+     *
+     * @return boolean
+     * @param Order $order Pedido.
+     */
+    public function canApprove(Order $order): bool
+    {
+        if ($order->status === 'requested') {
+            return true;
+        }
+
+        if ($order->status === 'canceled') {
+            $this->setStatus(Response::HTTP_INTERNAL_SERVER_ERROR);
+
+            $this->setMessage('Este pedido já foi cancelado.');
+            $this->setError('Pedidos cancelados não tem possibilidade de serem aprovados.');
 
             return false;
         }
