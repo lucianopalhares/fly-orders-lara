@@ -69,7 +69,7 @@ class OrderService extends ServiceResponse {
             $data = $dataPaginated->map(fn($item) => (object) $item->toArray())->toArray();
 
             $this->setStatus(Response::HTTP_OK);
-            $this->setMessage('Pedidos listados com sucesso!');
+            $this->setMessage('Seus pedidos foram listados com sucesso!');
             $this->setCollection($data);
             $this->setResource(OrderResource::class);
 
