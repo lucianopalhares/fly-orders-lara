@@ -216,11 +216,13 @@ class OrderService extends ServiceResponse {
         if ($order->status === 'approved' && \Carbon\Carbon::parse($order->departure_date)->isFuture() === false) {
             $this->setStatus(Response::HTTP_INTERNAL_SERVER_ERROR);
 
-            $this->setMessage('Não permitido cancelar este pedido.');
-            $this->setError('Este pedido já foi aprovado e a data de embarque já passou.');
+            $this->setMessage('Pedidos aprovados só podem ser cancelados antes da data de embarque.');
+            $this->setError('Este pedido não pode ser cancelado porque ele já foi aprovado e a data de embarque já passou.');
 
             return false;
         }
+
+        Gate::authorize('updateStatus', $order);
 
         return true;
     }
