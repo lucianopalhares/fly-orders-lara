@@ -8,9 +8,12 @@ use App\Models\Order;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Exception;
 use App\Http\Controllers\Controller;
+use App\Services\OrderService;
 
 class OrderController extends Controller
 {
+    public function __construct(private OrderService $service) {}
+
     /**
      * Lista os pedidos com filtro.
      *
@@ -19,52 +22,8 @@ class OrderController extends Controller
      */
     public function getOrders(Request $request): JsonResponse
     {
-        try {
-            $limit = $request->input('limit', 100);
-            $page = $request->input('page', 1);
-
-            if ($limit > 100) {
-                $limit = 100;
-            }
-
-            $orders = Order::query();
-
-            if ($request->has('user_id')) {
-                $orders->where('user_id', $request->user_id);
-            }
-            if ($request->has('requester_name')) {
-                $orders->where('requester_name', 'like', '%' . $request->requester_name . '%');
-            }
-            if ($request->has('destination_name')) {
-                $orders->where('destination_name', 'like', '%' . $request->destination_name . '%');
-            }
-            if ($request->has('departure_date_start') && $request->has('departure_date_end')) {
-                $orders->whereBetween('departure_date', [
-                    $request->departure_date_start,
-                    $request->departure_date_end
-                ]);
-            }
-
-            if ($request->has('return_date_start') && $request->has('return_date_end')) {
-                $orders->whereBetween('return_date', [
-                    $request->return_date_start,
-                    $request->return_date_end
-                ]);
-            }
-
-            if ($request->has('status')) {
-                $orders->where('status', $request->status);
-            }
-
-            $paginatedOrders = $orders->paginate($limit, ['*'], 'page', $page);
-
-            return response()->json($paginatedOrders);
-        } catch (Exception $e) {
-            return response()->json([
-                'error' => 'Falha ao recuperar os pedidos',
-                'message' => $e->getMessage()
-            ], 500);
-        }
+        $this->service->getOrders($request->all());
+        return $this->service->getJsonResponse();
     }
 
     /**
@@ -75,25 +34,12 @@ class OrderController extends Controller
      */
     public function create(Request $request): JsonResponse
     {
-        try {
-            $validated = $request->validate([
-                'user_id' => 'required|exists:users,id',
-                'requester_name' => 'required|string',
-                'destination_name' => 'required|string',
-                'departure_date' => 'required|date',
-                'return_date' => 'nullable|date',
-                'status' => 'required|in:requested,approved,canceled',
-            ]);
+        $passed = $this->service->validateOrder($request);
 
-            $order = Order::create($validated);
+        if ($passed === true)
+            $this->service->create($request->all());
 
-            return response()->json($order, 201);
-        } catch (Exception $e) {
-            return response()->json([
-                'error' => 'Falha ao criar o pedido',
-                'message' => $e->getMessage()
-            ], 500);
-        }
+        return $this->service->getJsonResponse();
     }
 
     /**
@@ -104,20 +50,8 @@ class OrderController extends Controller
      */
     public function get(string $id): JsonResponse
     {
-        try {
-            $order = Order::findOrFail($id);
-            return response()->json($order);
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'error' => 'Pedido não encontrado',
-                'message' => 'Pedido com o ID ' . $id . ' não foi encontrado'
-            ], 404);
-        } catch (Exception $e) {
-            return response()->json([
-                'error' => 'Falha ao recuperar o pedido',
-                'message' => $e->getMessage()
-            ], 500);
-        }
+        $this->service->get($id);
+        return $this->service->getJsonResponse();
     }
 
     /**
@@ -128,25 +62,11 @@ class OrderController extends Controller
      */
     public function updateStatus(string $id, Request $request): JsonResponse
     {
-        try {
-            $validated = $request->validate([
-                'status' => 'required|in:requested,approved,canceled',
-            ]);
+        $passed = $this->service->validateOrder($request, true);
 
-            $order = Order::findOrFail($id);
-            $order->update(['status' => $validated['status']]);
+        if ($passed === true)
+            $this->service->updateStatus($id, $request->input('status'));
 
-            return response()->json($order);
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'error' => 'Pedido não encontrado',
-                'message' => 'Pedido com o ID ' . $id . ' não foi encontrado'
-            ], 404);
-        } catch (Exception $e) {
-            return response()->json([
-                'error' => 'Falha ao atualizar o status do pedido',
-                'message' => $e->getMessage()
-            ], 500);
-        }
+        return $this->service->getJsonResponse();
     }
 }

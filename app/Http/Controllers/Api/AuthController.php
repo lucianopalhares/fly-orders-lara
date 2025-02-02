@@ -93,7 +93,7 @@ class AuthController extends Controller
      *
      * @return JsonResponse
      */
-    public function getUser(): JsonResponse
+    public function getProfile(): JsonResponse
     {
         try {
             if (! $user = JWTAuth::parseToken()->authenticate()) {
