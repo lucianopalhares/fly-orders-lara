@@ -58,6 +58,12 @@ php artisan key:generate
 php artisan migrate
 ```
 
+#### popule o banco de dados
+
+```
+php artisan db:seed
+```
+
 #### adicione permissão
 
 ```
