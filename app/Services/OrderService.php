@@ -9,8 +9,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Models\Order;
-use Illuminate\Support\Facades\Log;
 use App\Http\Resources\OrderResource;
+use Illuminate\Validation\ValidationException;
+use App\Http\Requests\OrderRequest;
 
 class OrderService extends ServiceResponse {
     public function __construct(private Order $order) {}
@@ -214,5 +215,51 @@ class OrderService extends ServiceResponse {
         }
 
         return true;
+    }
+
+    /**
+     * Validar novo pedido.
+     *
+     * @param Request $request            Dados do pedido para salvar.
+     * @param bool    $validateOnlyOrderStatus Se é somente pra validar os status ou todos dados do pedido.
+     * @return bool
+     */
+    function validateOrder(Request $request, $validateOnlyOrderStatus = false): bool
+    {
+        try {
+            if ($validateOnlyOrderStatus === true) {
+                $request->validate([
+                    'status' => 'required|in:requested,approved,canceled',
+                ], [
+                    'status.required' => 'O status é obrigatório.',
+                    'status.in' => 'O status é inválido.',
+                ]);
+            } else {
+                $orderRequest = new OrderRequest();
+                $orderRequest->validate($request);
+            }
+
+            return true;
+        } catch (ValidationException $e) {
+            $this->setStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
+            $this->setMessage('Verifique os campos do pedido.');
+            $this->setError($e->getMessage());
+
+            $errors = $e->errors();
+
+            if (is_array($errors) === true) {
+                $errors = $errors;
+            } else {
+                $errors = json_decode($errors, true);
+
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    $errors = [];
+                }
+            }
+
+            $this->setData($errors);
+
+            return false;
+        }
     }
 }

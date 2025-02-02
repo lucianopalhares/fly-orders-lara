@@ -34,16 +34,11 @@ class OrderController extends Controller
      */
     public function create(Request $request): JsonResponse
     {
-        $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'requester_name' => 'required|string',
-            'destination_name' => 'required|string',
-            'departure_date' => 'required|date',
-            'return_date' => 'nullable|date',
-            'status' => 'required|in:requested,approved,canceled',
-        ]);
+        $passed = $this->service->validateOrder($request);
 
-        $this->service->create($validated);
+        if ($passed === true)
+            $this->service->create($request->all());
+
         return $this->service->getJsonResponse();
     }
 
@@ -67,11 +62,11 @@ class OrderController extends Controller
      */
     public function updateStatus(string $id, Request $request): JsonResponse
     {
-        $validated = $request->validate([
-            'status' => 'required|in:requested,approved,canceled',
-        ]);
+        $passed = $this->service->validateOrder($request, true);
 
-        $this->service->updateStatus($id, $validated['status']);
+        if ($passed === true)
+            $this->service->updateStatus($id, $request->input('status'));
+
         return $this->service->getJsonResponse();
     }
 }
