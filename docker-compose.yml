@@ -1,0 +1,53 @@
+services:
+  laravel:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fly_lara_app
+    volumes:
+      - .:/var/www
+    networks:
+      - laravel_network_fly
+    depends_on:
+      - mysql
+      - redis
+    ports:
+      - "5173:5173"
+    mem_limit: 2g
+
+  nginx:
+    image: nginx:alpine
+    container_name: fly_lara_nginx
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - laravel_network_fly
+    depends_on:
+      - laravel
+
+  mysql:
+    image: mysql:5.7
+    container_name: fly_lara_mysql
+    volumes:
+      - mysql_data_fly:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      mysql_data_flyBASE: fly_lara
+      MYSQL_USER: fly_lara
+      MYSQL_PASSWORD: fly_lara
+    ports:
+      - '3337:3306'
+    expose:
+      - 3306
+    networks:
+      - laravel_network_fly
+
+networks:
+  laravel_network_fly:
+    driver: bridge
+
+volumes:
+  mysql_data_fly:
