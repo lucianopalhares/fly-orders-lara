@@ -1,12 +1,13 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Models\Order;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Exception;
+use App\Http\Controllers\Controller;
 
 class OrderController extends Controller
 {
@@ -37,12 +38,20 @@ class OrderController extends Controller
             if ($request->has('destination_name')) {
                 $orders->where('destination_name', 'like', '%' . $request->destination_name . '%');
             }
-            if ($request->has('departure_date')) {
-                $orders->where('departure_date', $request->departure_date);
+            if ($request->has('departure_date_start') && $request->has('departure_date_end')) {
+                $orders->whereBetween('departure_date', [
+                    $request->departure_date_start,
+                    $request->departure_date_end
+                ]);
             }
-            if ($request->has('return_date')) {
-                $orders->where('return_date', $request->return_date);
+
+            if ($request->has('return_date_start') && $request->has('return_date_end')) {
+                $orders->whereBetween('return_date', [
+                    $request->return_date_start,
+                    $request->return_date_end
+                ]);
             }
+
             if ($request->has('status')) {
                 $orders->where('status', $request->status);
             }
