@@ -1,4 +1,4 @@
-<p align="center"><img src="assets/img/cover.png" width="400" alt="Cover"></p>
+<p align="center"><img src="public/assets/img/cover.png" width="400" alt="Cover"></p>
 
 ## Fly Orders Lara
 
