@@ -19,6 +19,7 @@ Microserviço para fechar pedidos de viagem. Funcionalidades:
 * Autenticação JWT
 * Banco de dados Mysql
 * Documentação da API
+* Teste unitário com PHPunit
 
 ### Instalação
 
@@ -221,6 +222,25 @@ http://localhost:8000/api/notifications
     -   deslogar
     -   ver perfil do usuario logado
     -   ver notificações do usuário logado
+
+## Teste unitário com PHPunit:
+
+#### entre na aplicação laravel
+
+```
+docker exec -it fly_orders_lara_app bash
+```
+
+#### execute os testes de pedidos, serão rodados os seguintes testes:
+
+    -   criar pedido
+    -   listar pedidos
+    -   alterar status do pedido
+    -   visualizar um pedido
+
+```
+php artisan test --testsuite=Feature
+```
 
 ## License
 
