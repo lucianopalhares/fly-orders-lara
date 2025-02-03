@@ -18,9 +18,9 @@ class OrderPolicy
     /**
      * Determina se o usuário pode criar uma order.
      */
-    public function create(User $user): bool
+    public function create(User $user,  Order $order): bool
     {
-        return true; // Todos os usuários autenticados podem criar
+        return $user->id === $order->user_id;
     }
 
     /**
