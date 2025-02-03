@@ -163,7 +163,7 @@ body:
         -   filtrar intervalo da data de retorno: return_date_start e return_date_end
         -   filtrar por status: requested, canceled ou approved
 
-        -   coloque no filtro as datas com formato: ano/mes/dia
+        -   coloque no filtro as datas com formato: ano-mes-dia
 
         -   exemplo: http://localhost:8000/api/orders/list?status=canceled?destination_name=Rio de Janeiro
 
