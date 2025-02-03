@@ -236,10 +236,18 @@ class ServiceResponse
      */
     public function getResponse(): array
     {
+        $count = 0;
+
+        if (empty($this->collection) === false) {
+            $count = count($this->getData());
+        } elseif (empty($this->collectionItem) === false) {
+            $count = 1;
+        }
+
         return [
             'message' => $this->getMessage(),
             'data' => $this->getData(),
-            'count' => $this->collectionItem ? 1 : count($this->getData()),
+            'count' => $count,
             'error' => $this->getError(),
             'status' => $this->getStatus()
         ];
