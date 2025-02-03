@@ -28,7 +28,7 @@ class ServiceResponse
     private bool $data_from_collection = true;
 
     private object $collectionItem;
-    private array $collection;
+    private array $collection = [];
 
     /**
      * Pega o codigo de erro.
@@ -239,6 +239,7 @@ class ServiceResponse
         return [
             'message' => $this->getMessage(),
             'data' => $this->getData(),
+            'count' => $this->collectionItem ? 1 : count($this->getData()),
             'error' => $this->getError(),
             'status' => $this->getStatus()
         ];

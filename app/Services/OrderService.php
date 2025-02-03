@@ -12,8 +12,11 @@ use App\Models\Order;
 use App\Http\Resources\OrderResource;
 use Illuminate\Validation\ValidationException;
 use App\Http\Requests\OrderRequest;
+use Illuminate\Support\Facades\Gate;
+use App\Notifications\OrderStatusUpdated;
 
 class OrderService extends ServiceResponse {
+
     public function __construct(private Order $order) {}
 
     /**
@@ -32,7 +35,9 @@ class OrderService extends ServiceResponse {
                 $limit = 100;
             }
 
-            $orders = Order::query();
+            $user = request()->user();
+
+            $orders = $user->orders();
 
             if (empty($request['user_id']) === false) {
                 $orders->where('user_id', $request['user_id']);
@@ -64,7 +69,7 @@ class OrderService extends ServiceResponse {
             $data = $dataPaginated->map(fn($item) => (object) $item->toArray())->toArray();
 
             $this->setStatus(Response::HTTP_OK);
-            $this->setMessage('Pedidos listados com sucesso!');
+            $this->setMessage('Seus pedidos foram listados com sucesso!');
             $this->setCollection($data);
             $this->setResource(OrderResource::class);
 
@@ -97,6 +102,8 @@ class OrderService extends ServiceResponse {
             ) {
                 throw new Exception('Os campos nome, email e senha não estão preenchidos!');
             }
+
+            Gate::authorize('create', Order::class);
 
             DB::beginTransaction();
 
@@ -131,6 +138,8 @@ class OrderService extends ServiceResponse {
     {
         try {
             $data = $this->order->findOrFail($id);
+
+            Gate::authorize('view', $data);
 
             $this->setStatus(Response::HTTP_OK);
             $this->setMessage('Pedido encontrado com sucesso!');
@@ -177,6 +186,8 @@ class OrderService extends ServiceResponse {
 
             DB::commit();
 
+            $data->user->notify(new OrderStatusUpdated($data));
+
             return true;
         } catch (ModelNotFoundException $e) {
             $this->setStatus(Response::HTTP_NOT_FOUND);
@@ -208,11 +219,39 @@ class OrderService extends ServiceResponse {
         if ($order->status === 'approved' && \Carbon\Carbon::parse($order->departure_date)->isFuture() === false) {
             $this->setStatus(Response::HTTP_INTERNAL_SERVER_ERROR);
 
-            $this->setMessage('Não permitido cancelar este pedido.');
-            $this->setError('Este pedido já foi aprovado e a data de embarque já passou.');
+            $this->setMessage('Pedidos aprovados só podem ser cancelados antes da data de embarque.');
+            $this->setError('Este pedido não pode ser cancelado porque ele já foi aprovado e a data de embarque já passou.');
 
             return false;
         }
+
+        Gate::authorize('updateStatus', $order);
+
+        return true;
+    }
+
+    /**
+     * Valida aprovação de pedido.
+     *
+     * @return boolean
+     * @param Order $order Pedido.
+     */
+    public function canApprove(Order $order): bool
+    {
+        if ($order->status === 'requested') {
+            return true;
+        }
+
+        if ($order->status === 'canceled') {
+            $this->setStatus(Response::HTTP_INTERNAL_SERVER_ERROR);
+
+            $this->setMessage('Este pedido já foi cancelado.');
+            $this->setError('Pedidos cancelados não tem possibilidade de serem aprovados.');
+
+            return false;
+        }
+
+        Gate::authorize('updateStatus', $order);
 
         return true;
     }

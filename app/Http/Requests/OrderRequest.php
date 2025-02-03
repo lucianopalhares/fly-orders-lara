@@ -25,7 +25,7 @@ class OrderRequest extends FormRequest
             'destination_name' => 'required|string',
             'departure_date' => 'required|date',
             'return_date' => 'nullable|date',
-            'status' => 'required|in:requested,approved,canceled',
+            'status' => 'required|in:requested',
         ], [
             'user_id.required' => 'O ID do usuário é obrigatório.',
             'user_id.exists' => 'O usuário fornecido não existe.',

@@ -105,4 +105,32 @@ class AuthController extends Controller
 
         return response()->json(compact('user'));
     }
+
+    /**
+     * Pegar notificações do usuário logado
+     *
+     * @return JsonResponse
+     */
+    public function notifications(): JsonResponse
+    {
+        try {
+            if (! $user = JWTAuth::parseToken()->authenticate()) {
+                return response()->json(['error' => 'Usuário não encontrado'], 404);
+            }
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Token inválido'], 400);
+        }
+
+        $notifications = $user->notifications->map(function ($notification) {
+            return [
+                'id' => $notification->id,
+                'tipo' => 'Pedidos',
+                'mensagem' => $notification->data['message'] ?? 'Sem mensagem',
+                'lida' => empty($notification->read_at) === true ? 'Não' : 'Sim',
+                'data' => \Carbon\Carbon::parse($notification->created_at)->format('d/m/Y'),
+            ];
+        });
+
+        return response()->json(compact('notifications'));
+    }
 }
