@@ -60,13 +60,9 @@ class OrderController extends Controller
      * @method patch
      * @param string $id ID do pedido.
      */
-    public function updateStatus(string $id, Request $request): JsonResponse
+    public function updateStatus(string $id): JsonResponse
     {
-        $passed = $this->service->validateOrder($request, true);
-
-        if ($passed === true)
-            $this->service->updateStatus($id, $request->input('status'));
-
+        $this->service->updateStatus($id);
         return $this->service->getJsonResponse();
     }
 }

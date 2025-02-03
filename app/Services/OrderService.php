@@ -108,7 +108,7 @@ class OrderService extends ServiceResponse {
 
             $data = $this->order->create($data);
 
-            Gate::authorize('create', $data);
+            //Gate::authorize('create', $data);
 
             $this->setStatus(Response::HTTP_OK);
             $this->setMessage('Pedido cadastrado com sucesso!');
@@ -167,9 +167,8 @@ class OrderService extends ServiceResponse {
      *
      * @return bool
      * @param string $id ID do pedido.
-     * @param string $status
      */
-    public function updateStatus(string $id, string $status): bool
+    public function updateStatus(string $id): bool
     {
         try {
             $data = $this->order->findOrFail($id);
@@ -216,20 +215,11 @@ class OrderService extends ServiceResponse {
      * @param bool    $validateOnlyOrderStatus Se é somente pra validar os status ou todos dados do pedido.
      * @return bool
      */
-    function validateOrder(Request $request, $validateOnlyOrderStatus = false): bool
+    function validateOrder(Request $request): bool
     {
         try {
-            if ($validateOnlyOrderStatus === true) {
-                $request->validate([
-                    'status' => 'required|in:requested,approved,canceled',
-                ], [
-                    'status.required' => 'O status é obrigatório.',
-                    'status.in' => 'O status é inválido.',
-                ]);
-            } else {
-                $orderRequest = new OrderRequest();
-                $orderRequest->validate($request);
-            }
+            $orderRequest = new OrderRequest();
+            $orderRequest->validate($request);
 
             return true;
         } catch (ValidationException $e) {
