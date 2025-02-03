@@ -167,6 +167,8 @@ body:
 
         -   somente os pedidos pertencentes ao usuario logado são visualizados
 
+        -   exemplo: http://localhost:8000/api/orders/list?status=canceled?destination_name=Rio de Janeiro
+
 metodo: GET
 authorization: BearerToken (use o token gerado)
 url:
