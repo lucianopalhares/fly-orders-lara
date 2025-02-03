@@ -37,7 +37,7 @@ class OrderRequest extends FormRequest
             'departure_date.date' => 'A data de partida deve estar em um formato válido.',
             'return_date.date' => 'A data de retorno deve estar em um formato válido.',
             'status.required' => 'O status é obrigatório.',
-            'status.in' => 'O status é inválido.',
+            'status.in' => 'O status deve ser "requested".',
         ]);
 
         if ($validator->fails()) {
