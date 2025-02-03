@@ -70,17 +70,161 @@ php artisan db:seed
 chmod 777 -R storage bootstrap
 ```
 
-#### saia do container
+### Documentação da api
 
+http://localhost:8000/docs/api
+
+### Exemplo de uso [criar ou realizar login com usuário]:
+
+#### crie um usuário pela api
+
+metodo: POST
+url:
 ```
-exit
+http://localhost:8000/api/register
+```
+body:
+```
+{
+    "name": "John Doe",
+    "email": "john@example.com",
+    "password": "password",
+    "password_confirmation": "password"
+}
 ```
 
-#### reinicie a aplicação
+a conta do usuário sera criada
+e um token de acesso sera gerado
 
+#### se usuário ja foi criado, faça login
+
+metodo: POST
+url:
 ```
-docker-compose restart
+http://localhost:8000/api/login
 ```
+body:
+```
+{
+    "email": "john@example.com",
+    "password": "password"
+}
+```
+
+um token de acesso sera gerado
+
+#### se usuário ja esta logado e deseja apenas pegar os dados
+
+metodo: GET
+url:
+```
+http://localhost:8000/api/profile
+```
+
+#### sair da sessão do usuário
+
+metodo: POST
+url:
+```
+http://localhost:8000/api/logout
+```
+
+#### utilize o token para as proximas etapas
+
+### Exemplo de uso [gerenciar pedidos]:
+
+#### crie um pedido para o usuário logado (use o token)
+
+    -   o pedido é criado e é atrelado ao usuário logado
+
+metodo: POST
+authorization: BearerToken (use o token gerado)
+url:
+```
+http://localhost:8000/api/orders/create
+```
+body:
+```
+{
+  "requester_name": "João Silva",
+  "destination_name": "Rio de Janeiro",
+  "departure_date": "2025-06-15",
+  "return_date": "2025-06-20",
+  "status": "requested"
+}
+```
+
+#### listar pedidos do usuário logado
+
+    -   somente os pedidos pertencentes ao usuario logado são visualizados
+
+metodo: GET
+authorization: BearerToken (use o token gerado)
+url:
+```
+http://localhost:8000/api/orders/list
+```
+
+#### ver pedido do usuário logado
+
+    -   somente sera autorizado o usuario ver algum pedido que ele mesmo criou
+
+metodo: GET
+authorization: BearerToken (use o token gerado)
+url:
+```
+http://localhost:8000/api/orders/show/ID
+```
+
+#### atualizar status de um pedido de outro usuário
+
+    -   o usuário logado que criou o pedido não pode alterar o status do mesmo
+    -   somente outros usuários que não criou o pedido, podem alterar o status do mesmo
+
+    -   a seguinte ordem de alteração de status é obedecida:
+        -   requested -> canceled (solicitado para cancelado)
+        -   requested -> approved (solicitado para aprovado)
+        -   approved  -> canceled (somente se a data de partida (departure_date) não estiver vencida)
+
+    -   não precisa indicar o status que quer alterar
+    -   existe uma lógica que identifica o proximo status do pedido
+
+metodo: GET
+authorization: BearerToken (use o token gerado)
+url:
+```
+http://localhost:8000/api/orders/ID/update-status
+```
+
+#### ver notificações de usuário logado
+
+metodo: GET
+authorization: BearerToken (use o token gerado)
+url:
+```
+http://localhost:8000/api/notifications
+```
+
+#### ver notificações de usuário logado
+
+ -   sera exibido todas notificações que pertencem ao usuario logado
+
+metodo: GET
+authorization: BearerToken (use o token gerado)
+url:
+```
+http://localhost:8000/api/notifications
+```
+
+## Funções somente para usuário logado:
+
+    -   criar pedido
+    -   listar pedidos
+    -   alterar status do pedido
+    -   visualizar um pedido
+    -   deslogar
+    -   ver perfil do usuario logado
+    -   ver notificações do usuário logado
 
 ## License
 

@@ -36,8 +36,11 @@ class OrderController extends Controller
     {
         $passed = $this->service->validateOrder($request);
 
-        if ($passed === true)
-            $this->service->create($request->all());
+        if ($passed === true) {
+            $data = $request->all();
+            $data['user_id'] = auth('api')->user()->id;
+            $this->service->create($data);
+        }
 
         return $this->service->getJsonResponse();
     }

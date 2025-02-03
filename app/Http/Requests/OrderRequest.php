@@ -20,11 +20,11 @@ class OrderRequest extends FormRequest
     public function validate(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'user_id' => 'required|exists:users,id',
+            'user_id' => 'nullable|exists:users,id',
             'requester_name' => 'required|string',
             'destination_name' => 'required|string',
             'departure_date' => 'required|date',
-            'return_date' => 'nullable|date',
+            'return_date' => 'nullable|date|after:departure_date',
             'status' => 'required|in:requested',
         ], [
             'user_id.required' => 'O ID do usuário é obrigatório.',
@@ -36,6 +36,7 @@ class OrderRequest extends FormRequest
             'departure_date.required' => 'A data de partida é obrigatória.',
             'departure_date.date' => 'A data de partida deve estar em um formato válido.',
             'return_date.date' => 'A data de retorno deve estar em um formato válido.',
+            'return_date.after' => 'A data de retorno deve ser maior do que a data de partida.',
             'status.required' => 'O status é obrigatório.',
             'status.in' => 'O status deve ser "requested".',
         ]);

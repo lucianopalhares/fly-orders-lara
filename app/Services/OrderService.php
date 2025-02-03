@@ -108,7 +108,7 @@ class OrderService extends ServiceResponse {
 
             $data = $this->order->create($data);
 
-            //Gate::authorize('create', $data);
+            Gate::authorize('create', $data);
 
             $this->setStatus(Response::HTTP_OK);
             $this->setMessage('Pedido cadastrado com sucesso!');
