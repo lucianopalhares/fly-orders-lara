@@ -157,6 +157,11 @@ body:
 
 #### listar pedidos do usuário logado
 
+    -   parametros de paginação:
+        -   se nao indicar considera o padrão: page=1 e limit=100
+        -   indicar a pagina: page
+        -   indicar a quantidade de pedidos por pagina: limit
+
     -   parametros de busca:
         -   filtrar pelo nome do solicitante definido: requester_name
         -   filtrar o local do destino: destination_name
