@@ -156,7 +156,16 @@ body:
 
 #### listar pedidos do usuário logado
 
-    -   somente os pedidos pertencentes ao usuario logado são visualizados
+    -   parametros de busca:
+        -   filtrar pelo nome do solicitante definido: requester_name
+        -   filtrar o local do destino: destination_name
+        -   filtrar intervalo da data de partida: departure_date_start e departure_date_end
+        -   filtrar intervalo da data de retorno: return_date_start e return_date_end
+        -   filtrar por status: requested, canceled ou approved
+
+        -   coloque no filtro as datas com formato: ano/mes/dia
+
+        -   somente os pedidos pertencentes ao usuario logado são visualizados
 
 metodo: GET
 authorization: BearerToken (use o token gerado)
@@ -194,15 +203,6 @@ authorization: BearerToken (use o token gerado)
 url:
 ```
 http://localhost:8000/api/orders/ID/update-status
-```
-
-#### ver notificações de usuário logado
-
-metodo: GET
-authorization: BearerToken (use o token gerado)
-url:
-```
-http://localhost:8000/api/notifications
 ```
 
 #### ver notificações de usuário logado
