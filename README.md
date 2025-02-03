@@ -165,8 +165,6 @@ body:
 
         -   coloque no filtro as datas com formato: ano/mes/dia
 
-        -   somente os pedidos pertencentes ao usuario logado são visualizados
-
         -   exemplo: http://localhost:8000/api/orders/list?status=canceled?destination_name=Rio de Janeiro
 
 metodo: GET
@@ -177,8 +175,6 @@ http://localhost:8000/api/orders/list
 ```
 
 #### ver pedido do usuário logado
-
-    -   somente sera autorizado o usuario ver algum pedido que ele mesmo criou
 
 metodo: GET
 authorization: BearerToken (use o token gerado)
@@ -208,8 +204,6 @@ http://localhost:8000/api/orders/ID/update-status
 ```
 
 #### ver notificações de usuário logado
-
- -   sera exibido todas notificações que pertencem ao usuario logado
 
 metodo: GET
 authorization: BearerToken (use o token gerado)
