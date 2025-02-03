@@ -197,8 +197,8 @@ http://localhost:8000/api/orders/ID
 
     -   somente permite cancelar se:
         -   o pedido estiver no status solicitado (requested)
-        -   se o pedido estiver no status aprovado (approved)
-            -   somente se a data de partida (departure_date) não estiver vencida
+        -   caso o pedido estiver no status aprovado (approved)
+            somente cancela se a data de partida (departure_date) não estiver vencida
 
 metodo: GET
 authorization: BearerToken (use o token gerado)
