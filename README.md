@@ -132,7 +132,9 @@ http://localhost:8000/api/logout
 
 #### utilize o token para as proximas etapas
 
+
 ### Exemplo de uso [gerenciar pedidos]:
+
 
 #### crie um pedido para o usuário logado (use o token)
 
@@ -186,27 +188,34 @@ metodo: GET
 authorization: BearerToken (use o token gerado)
 url:
 ```
-http://localhost:8000/api/orders/show/ID
+http://localhost:8000/api/orders/ID
 ```
 
-#### atualizar status de um pedido de outro usuário
+#### não permite alterar status de pedido do usuário logado
 
-    -   o usuário logado que criou o pedido não pode alterar o status do mesmo
-    -   somente outros usuários que não criou o pedido, podem alterar o status do mesmo
+#### cancelar pedido de outro usuário
 
-    -   a seguinte ordem de alteração de status é obedecida:
-        -   requested -> canceled (solicitado para cancelado)
-        -   requested -> approved (solicitado para aprovado)
-        -   approved  -> canceled (somente se a data de partida (departure_date) não estiver vencida)
-
-    -   não precisa indicar o status que quer alterar
-    -   existe uma lógica que identifica o proximo status do pedido
+    -   somente permite cancelar se:
+        -   o pedido estiver no status solicitado (requested)
+        -   se o pedido estiver no status aprovado (approved)
+            -   somente se a data de partida (departure_date) não estiver vencida
 
 metodo: GET
 authorization: BearerToken (use o token gerado)
 url:
 ```
-http://localhost:8000/api/orders/ID/update-status
+http://localhost:8000/api/orders/ID/cancel
+```
+
+#### aprovar pedido de outro usuário
+
+    -   somente se o pedido estiver no status solicitado (requested)
+
+metodo: GET
+authorization: BearerToken (use o token gerado)
+url:
+```
+http://localhost:8000/api/orders/ID/approve
 ```
 
 #### ver notificações de usuário logado
@@ -228,7 +237,9 @@ http://localhost:8000/api/notifications
     -   ver perfil do usuario logado
     -   ver notificações do usuário logado
 
+
 ## Teste unitário com PHPunit:
+
 
 #### entre na aplicação laravel
 

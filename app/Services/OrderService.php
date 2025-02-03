@@ -166,22 +166,21 @@ class OrderService extends ServiceResponse {
      * Editar o status do pedido.
      *
      * @return bool
-     * @param string $id ID do pedido.
+     * @param string $id   ID do pedido.
+     * @param string $type Tipos suportados: approve, cancel
      */
-    public function updateStatus(string $id): bool
+    public function updateStatus(string $id, string $type): bool
     {
         try {
             $data = $this->order->findOrFail($id);
 
             DB::beginTransaction();
 
+            Gate::authorize('updateStatus', $data);
+
             $orderState = OrderStateFactory::create($data->status);
 
-            try {
-                $orderState->approve($data);
-            } catch (\Exception $e) {
-                $orderState->cancel($data);
-            }
+            $orderState->$type($data);
 
             $this->setStatus(Response::HTTP_OK);
             $this->setMessage('Pedido atualizado com sucesso!');

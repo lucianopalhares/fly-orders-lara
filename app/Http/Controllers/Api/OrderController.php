@@ -58,14 +58,26 @@ class OrderController extends Controller
     }
 
     /**
-     * Editar o status do pedido.
+     * Cancelar pedido.
      *
-     * @method patch
+     * @method get
      * @param string $id ID do pedido.
      */
-    public function updateStatus(string $id): JsonResponse
+    public function cancelOrder(string $id): JsonResponse
     {
-        $this->service->updateStatus($id);
+        $this->service->updateStatus($id, 'cancel');
+        return $this->service->getJsonResponse();
+    }
+
+    /**
+     * Aprovar pedido.
+     *
+     * @method get
+     * @param string $id ID do pedido.
+     */
+    public function approveOrder(string $id): JsonResponse
+    {
+        $this->service->updateStatus($id, 'approve');
         return $this->service->getJsonResponse();
     }
 }

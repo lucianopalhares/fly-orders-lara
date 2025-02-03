@@ -24,22 +24,6 @@ class OrderPolicy
     }
 
     /**
-     * Determina se o usuário pode atualizar a order.
-     */
-    public function update(User $user, Order $order): bool
-    {
-        return $user->id === $order->user_id;
-    }
-
-    /**
-     * Determina se o usuário pode deletar a order.
-     */
-    public function delete(User $user, Order $order): bool
-    {
-        return $user->id === $order->user_id;
-    }
-
-    /**
      * Determina se o usuário pode alterar o status da order.
      */
     public function updateStatus(User $user, Order $order): bool

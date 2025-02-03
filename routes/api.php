@@ -14,8 +14,9 @@ Route::middleware('auth:api')->group(function () {
 
     Route::prefix('orders')->group(function () {
         Route::post('/create', [OrderController::class, 'create']);
-        Route::get('/show/{id}', [OrderController::class, 'get']);
-        Route::get('/{id}/update-status', [OrderController::class, 'updateStatus']);
+        Route::get('/{id}', [OrderController::class, 'get']);
+        Route::get('/{id}/approve', [OrderController::class, 'approveOrder']);
+        Route::get('/{id}/cancel', [OrderController::class, 'cancelOrder']);
         Route::get('/list', [OrderController::class, 'getOrders']);
     });
 });
